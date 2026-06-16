@@ -2,67 +2,70 @@ import streamlit as st
 import time
 from tradingview_ta import TA_Handler, Interval
 
-# मोबाइल और वेब पेज की सेटिंग्स
+# موبائل اور ویب پیج کی سیٹنگز
 st.set_page_config(page_title="Quotex VIP Signals", page_icon="📈", layout="centered")
 
-# मजबूत CSS इंजेक्शन: नीचे की सफेद पट्टी (Footer) और फुलस्क्रीन बटन को हर हाल में छिपाने के लिए
-hide_elements_css = """
-            <style>
-            #MainMenu {visibility: hidden; display: none;}
-            footer {visibility: hidden; display: none !important;}
-            header {visibility: hidden; display: none;}
-            .stActionButton {visibility: hidden; display: none;}
-            
-            /* फुलस्क्रीन बटन और नीचे की सभी एक्स्ट्रा पट्टियों को ब्लॉक करना */
-            button[title="View fullscreen"] {visibility: hidden; display: none !important;}
-            .viewerBadge_container__1QSob {display: none !important;}
-            .viewerBadge_link__1S1Z3 {display: none !important;}
-            
-            /* मुख्य बैकग्राउंड को डार्क सेट करना */
-            .stApp {
-                background-color: #0b0e14;
-                color: #ffffff;
-            }
-            
-            /* इनपुट बॉक्स स्टाइलिंग */
-            div[data-baseweb="select"] > div {
-                background-color: #151a24 !important;
-                color: white !important;
-                border: 1px solid #2a3447 !important;
-                border-radius: 8px !important;
-            }
-            
-            /* टेक्स्ट कलर सेटिंग्स */
-            div[data-testid="stMarkdownContainer"] p {
-                color: #e0e3eb !important;
-            }
-            
-            /* बटन को प्रोफेशनल ग्रीन लुक देना */
-            div.stButton > button {
-                background-color: #00b050 !important;
-                color: white !important;
-                font-weight: bold !important;
-                font-size: 18px !important;
-                border-radius: 8px !important;
-                border: none !important;
-                padding: 12px 20px !important;
-                box-shadow: 0px 4px 15px rgba(0, 176, 80, 0.4) !important;
-                transition: all 0.3s ease !important;
-            }
-            div.stButton > button:hover {
-                background-color: #00cd5d !important;
-                transform: scale(1.02);
-            }
-            </style>
-            """
-st.markdown(hide_elements_css, unsafe_allow_html=True)
+# بالکل نئی اسٹریم لٹ کلاسز کو بلاک کرنے کا نیا کوڈ (اس سے پٹی لازمی غائب ہوگی)
+st.markdown("""
+    <style>
+    /* مینو، ہیڈر اور پرانے فوٹر کو ہٹانے کے لیے */
+    #MainMenu {visibility: hidden; display: none;}
+    footer {visibility: hidden; display: none !important;}
+    header {visibility: hidden; display: none;}
+    
+    /* نئی اسٹریملٹ اپڈیٹ کی نیچے والی سفید پٹی (Viewer Badge) کو غائب کرنے کے لیے */
+    [data-testid="stStatusWidget"] {visibility: hidden; display: none !important;}
+    .stAppDeployDropdown {display: none !important;}
+    div[class*="viewerBadge"] {display: none !important;}
+    div[class*="styles_viewerBadge"] {display: none !important;}
+    
+    /* فل اسکرین بٹن کو غائب کرنے کے لیے */
+    button[title="View fullscreen"] {visibility: hidden; display: none !important;}
+    
+    /* مین بیک گراؤنڈ کلر */
+    .stApp {
+        background-color: #0b0e14;
+        color: #ffffff;
+    }
+    
+    /* ڈراپ ڈاؤن باکس */
+    div[data-baseweb="select"] > div {
+        background-color: #151a24 !important;
+        color: white !important;
+        border: 1px solid #2a3447 !important;
+        border-radius: 8px !important;
+    }
+    
+    /* ٹیکسٹ کلر */
+    div[data-testid="stMarkdownContainer"] p {
+        color: #e0e3eb !important;
+    }
+    
+    /* کوٹیکس اسٹائل گرین بٹن */
+    div.stButton > button {
+        background-color: #00b050 !important;
+        color: white !important;
+        font-weight: bold !important;
+        font-size: 18px !important;
+        border-radius: 8px !important;
+        border: none !important;
+        padding: 12px 20px !important;
+        box-shadow: 0px 4px 15px rgba(0, 176, 80, 0.4) !important;
+        transition: all 0.3s ease !important;
+    }
+    div.stButton > button:hover {
+        background-color: #00cd5d !important;
+        transform: scale(1.02);
+    }
+    </style>
+""", unsafe_allow_html=True)
 
-# हेडिंग सेक्शन
+# ہیڈنگ سیکشن
 st.markdown("<h1 style='text-align: center; color: #00e676; font-family: sans-serif; margin-bottom: 0;'>📈 QUOTEX VIP SIGNALS</h1>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center; color: #707a8a; font-family: sans-serif; font-size: 14px;'>AI-Powered Real-Time Market Analysis Dashboard</p>", unsafe_allow_html=True)
 st.markdown("<div style='border-bottom: 2px solid #1f2633; margin-bottom: 25px;'></div>", unsafe_allow_html=True)
 
-# 1. एसेट/करेंसी पेयर का चुनाव
+# 1. کرنسی پیئر کا انتخاب
 pair = st.selectbox(
     "📊 SELECT ASSET / CURRENCY PAIR:",
     ["EURUSD", "GBPUSD", "USDJPY", "AUDUSD", "USDCAD", "BTCUSD", "ETHUSD"]
@@ -70,7 +73,7 @@ pair = st.selectbox(
 
 st.write("")
 
-# 2. टाइमफ्रेम का चुनाव
+# 2. ٹائم فریم کا انتخاب
 timeframe_label = st.radio(
     "⏱️ SELECT EXPIRY TIMEFRAME:",
     ["5 Seconds", "15 Seconds", "30 Seconds", "60 Seconds"],
@@ -80,9 +83,8 @@ timeframe_label = st.radio(
 st.write("")
 st.write("")
 
-# 3. सिग्नल बटन और लॉजिक
+# 3. سگنل بٹن
 if st.button("🚀 GENERATE INSTANT SIGNAL", use_container_width=True):
-    # 3 सेकंड का टाइमर
     countdown_placeholder = st.empty()
     for seconds_left in range(3, 0, -1):
         countdown_placeholder.markdown(
@@ -143,8 +145,4 @@ if st.button("🚀 GENERATE INSTANT SIGNAL", use_container_width=True):
             st.write("")
             col1, col2, col3 = st.columns(3)
             col1.metric("Buy Indicators", buy_score)
-            col2.metric("Neutral", neutral_score)
-            col3.metric("Sell Indicators", sell_score)
-            
-        except Exception as e:
-            st.error(f"Error connecting to server. Please try again.")
+            col2.metric("Neutral", neutral_score
