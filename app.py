@@ -2,10 +2,10 @@ import streamlit as st
 import time
 from tradingview_ta import TA_Handler, Interval
 
-# موبائل اور ویب پیج کی سیٹنگز
-st.set_page_config(page_title="Quotex VIP Signals", page_icon="📈", layout="centered")
+# پیج سیٹنگز
+st.set_page_config(page_title="VIP Trading Terminal", page_icon="📈", layout="centered")
 
-# پٹی غائب کرنے اور ڈارک تھیم کا کسٹم CSS
+# کسٹم اسٹائلنگ اور پٹی غائب کرنے کا کوڈ
 st.markdown("""
     <style>
     #MainMenu {visibility: hidden; display: none;}
@@ -14,18 +14,15 @@ st.markdown("""
     [data-testid="stStatusWidget"] {visibility: hidden; display: none !important;}
     .stAppDeployDropdown {display: none !important;}
     div[class*="viewerBadge"] {display: none !important;}
-    div[class*="styles_viewerBadge"] {display: none !important;}
     button[title="View fullscreen"] {visibility: hidden; display: none !important;}
     
     .stApp { background-color: #0b0e14; color: #ffffff; }
     div[data-baseweb="select"] > div { background-color: #151a24 !important; color: white !important; border: 1px solid #2a3447 !important; border-radius: 8px !important; }
-    div[data-testid="stMarkdownContainer"] p { color: #e0e3eb !important; }
-    div.stButton > button { background-color: #00b050 !important; color: white !important; font-weight: bold !important; font-size: 16px !important; border-radius: 8px !important; border: none !important; padding: 10px 20px !important; box-shadow: 0px 4px 15px rgba(0, 176, 80, 0.3) !important; }
-    div.stButton > button:hover { background-color: #00cd5d !important; }
+    div.stButton > button { background-color: #00b050 !important; color: white !important; font-weight: bold; border-radius: 8px !important; width: 100%; }
     </style>
 """, unsafe_allow_html=True)
 
-# سیشن اسٹیٹ میں ڈیٹا بیس بنانا
+# ڈیٹا بیس اسٹوریج
 if "users_db" not in st.session_state:
     st.session_state.users_db = {
         "admin@bot.com": {
@@ -37,150 +34,135 @@ if "users_db" not in st.session_state:
 if "logged_in_user" not in st.session_state:
     st.session_state.logged_in_user = None
 
-# لاگ آؤٹ فنکشن
-def logout():
-    st.session_state.logged_in_user = None
-    st.rerun()
+countries_list = ["Pakistan", "India", "Bangladesh", "UAE", "Saudi Arabia", "USA", "UK", "Others"]
 
-# ممالک کی لسٹ
-countries_list = ["Pakistan", "India", "Bangladesh", "UAE", "Saudi Arabia", "USA", "UK", "Nigeria", "Others"]
-
-# مین ہیڈنگ
-st.markdown("<h1 style='text-align: center; color: #00e676; font-family: sans-serif; margin-bottom: 0;'>📈 QUOTEX VIP SIGNALS</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; color: #00e676;'>📈 VIP SIGNAL CONTROLLER</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #707a8a; font-size: 13px;'>Secure Financial Analysis Interface</p>", unsafe_allow_html=True)
 st.markdown("<div style='border-bottom: 2px solid #1f2633; margin-bottom: 25px;'></div>", unsafe_allow_html=True)
 
-# ---- اگر صارف لاگ ان نہیں ہے ----
+# لاگ ان اور رجسٹریشن سسٹم
 if st.session_state.logged_in_user is None:
-    tab1, tab2, tab3 = st.tabs(["🔐 LOGIN", "📝 REGISTER", "🔑 FORGOT PASSWORD"])
+    tab1, tab2, tab3 = st.tabs(["🔐 MEMBER ACCESS", "📝 REQUEST ACCESS", "🔑 RECOVERY"])
     
-    # 1. لاگ ان پینل
     with tab1:
-        st.subheader("Login to Your Account")
-        login_email = st.text_input("Email Address:", key="login_email").strip().lower()
-        login_pass = st.text_input("Password:", type="password", key="login_pass")
+        st.write("Enter your registered credentials:")
+        login_email = st.text_input("User ID (Email):", key="l_email").strip().lower()
+        login_pass = st.text_input("Access Key (Password):", type="password", key="l_pass")
         
-        if st.button("SIGN IN", use_container_width=True):
+        if st.button("VERIFY & ENTER", key="btn_login"):
             if login_email in st.session_state.users_db:
                 user_data = st.session_state.users_db[login_email]
                 if user_data["password"] == login_pass:
                     if user_data["status"] == "Approved":
                         st.session_state.logged_in_user = login_email
-                        st.success(f"Welcome back, {user_data['name']}!")
+                        st.success("Access Granted!")
                         time.sleep(1)
                         st.rerun()
                     else:
-                        st.error("❌ Your account is pending admin approval. Please contact the administrator.")
+                        st.error("❌ Your account is pending admin verification.")
                 else:
-                    st.error("❌ Incorrect Password.")
+                    st.error("❌ Invalid Access Key.")
             else:
-                st.error("❌ Account not found. Please register first.")
+                st.error("❌ ID not registered.")
                 
-    # 2. رجسٹریشن پینل (کنٹری کے ساتھ)
     with tab2:
-        st.subheader("Create New Account")
-        reg_name = st.text_input("Full Name:")
+        st.subheader("Account Application")
+        reg_name = st.text_input("Your Full Name:")
         reg_phone = st.text_input("Mobile Number:")
-        reg_country = st.selectbox("Select Your Country:", countries_list)
-        reg_email = st.text_input("Email Address:").strip().lower()
-        reg_address = st.text_input("Address:")
-        reg_pass = st.text_input("Create Password:", type="password")
-        reg_repass = st.text_input("Confirm Password:", type="password")
+        reg_country = st.selectbox("Your Country:", countries_list)
+        reg_email = st.text_input("Email ID:").strip().lower()
+        reg_address = st.text_input("Postal Address:")
+        reg_pass = st.text_input("Choose Password:", type="password")
+        reg_repass = st.text_input("Retype Password:", type="password")
         
-        if st.button("SUBMIT REGISTRATION", use_container_width=True):
+        if st.button("SUBMIT APPLICATION", key="btn_reg"):
             if not (reg_name and reg_phone and reg_email and reg_address and reg_pass and reg_repass):
-                st.error("⚠️ All fields are required!")
+                st.error("⚠️ All fields are mandatory!")
             elif reg_pass != reg_repass:
                 st.error("❌ Passwords do not match!")
             elif reg_email in st.session_state.users_db:
-                st.error("❌ This email is already registered!")
+                st.error("❌ This ID is already in use.")
             else:
                 st.session_state.users_db[reg_email] = {
                     "name": reg_name, "phone": reg_phone, "country": reg_country,
                     "address": reg_address, "password": reg_pass, "status": "Pending", "role": "user"
                 }
-                st.success("✅ Registered Successfully! Waiting for Admin Approval.")
+                st.success("✅ Application submitted! Please ask Admin to approve your ID.")
 
-    # 3. فارگیٹ پاسورڈ پینل
     with tab3:
-        st.subheader("Recover Your Password")
-        st.write("تصدیق کے لیے اپنی رجسٹرڈ تفصیلات درج کریں:")
-        f_email = st.text_input("Enter Registered Email:", key="f_email").strip().lower()
-        f_name = st.text_input("Enter Full Name:", key="f_name")
-        f_phone = st.text_input("Enter Mobile Number:", key="f_phone")
+        st.subheader("Credential Recovery")
+        f_email = st.text_input("Registered Email:", key="f_email").strip().lower()
+        f_name = st.text_input("Full Name:", key="f_name")
+        f_phone = st.text_input("Mobile Number:", key="f_phone")
         
-        if st.button("RECOVER PASSWORD", use_container_width=True):
+        if st.button("RETRIEVE ACCESS KEY", key="btn_forgot"):
             if f_email in st.session_state.users_db:
                 u_data = st.session_state.users_db[f_email]
                 if u_data["name"].lower() == f_name.lower() and u_data["phone"] == f_phone:
-                    st.success(f"🔑 Your Password is: **{u_data['password']}**")
+                    st.success(f"🔑 Your Access Key is: **{u_data['password']}**")
                 else:
-                    st.error("❌ معلومات میچ نہیں ہوئیں۔ برائے مہربانی صحیح نام اور موبائل نمبر ڈالیں۔")
+                    st.error("❌ Identity check failed. Incorrect details.")
             else:
-                st.error("❌ یہ ای میل ریکارڈ میں موجود نہیں ہے۔")
+                st.error("❌ No such ID found.")
 
-# ---- اگر لاگ ان ہو چکا ہے ----
 else:
     current_email = st.session_state.logged_in_user
     user_info = st.session_state.users_db[current_email]
     
-    # ٹاپ بار
     col_user, col_out = st.columns([4, 1])
-    col_user.markdown(f"👤 **Logged in as:** {user_info['name']} ({user_info['country']})")
-    if col_out.button("LOGOUT", key="logout_btn"):
+    col_user.markdown(f"👤 **Active Session:** {user_info['name']} ({user_info['country']})")
+    if col_out.button("DISCONNECT", key="logout_btn"):
         logout()
         
     st.write("---")
     
-    # 🔄 پاسورڈ تبدیل کرنے کا آپشن (لاگ ان کے بعد)
-    with st.expander("🔄 CHANGE YOUR PASSWORD (پاسورڈ تبدیل کریں)"):
-        old_p = st.text_input("Current Password:", type="password", key="old_p")
+    with st.expander("🔄 MODIFY ACCESS KEY (پاسورڈ تبدیل کریں)"):
+        old_p = st.text_input("Old Password:", type="password", key="old_p")
         new_p = st.text_input("New Password:", type="password", key="new_p")
-        confirm_p = st.text_input("Confirm New Password:", type="password", key="confirm_p")
+        confirm_p = st.text_input("Confirm Password:", type="password", key="confirm_p")
         
-        if st.button("UPDATE PASSWORD"):
+        if st.button("SAVE CHANGES"):
             if old_p != user_info["password"]:
-                st.error("❌ پرانا پاسورڈ غلط ہے!")
+                st.error("❌ Incorrect old password.")
             elif new_p != confirm_p:
-                st.error("❌ نئے پاسورڈ آپس میں میچ نہیں ہو رہے!")
+                st.error("❌ New passwords mismatch.")
             elif len(new_p) < 4:
-                st.error("⚠️ نیا پاسورڈ کم از کم 4 ہندسوں کا ہونا چاہیے۔")
+                st.error("⚠️ Must be at least 4 characters.")
             else:
                 st.session_state.users_db[current_email]["password"] = new_p
-                st.success("✅ پاسورڈ کامیابی سے تبدیل ہو گیا ہے!")
+                st.success("✅ Password updated successfully!")
                 time.sleep(1)
                 st.rerun()
 
     st.write("")
 
-    # ---- ایڈمن پینل لاجک ----
     if user_info["role"] == "admin":
-        st.subheader("👑 ADMIN CONTROL PANEL")
-        st.write("صارفین کی لسٹ اور منظوری کا پینل:")
+        st.subheader("👑 TERMINAL CONTROLLER PANEL")
         
         for email, data in list(st.session_state.users_db.items()):
             if data["role"] == "admin":
                 continue
                 
             with st.container():
-                st.markdown(f"**Name:** {data['name']} | **Email:** {email} | **Phone:** {data['phone']} | **Country:** {data['country']}")
-                st.markdown(f"**Address:** {data['address']} | **Status:** `{data['status']}`")
+                st.markdown(f"**Name:** {data['name']} | **Country:** {data['country']} | **Phone:** {data['phone']}")
+                st.markdown(f"**Email:** {email} | **Status:** `{data['status']}`")
                 
                 if data["status"] == "Pending":
-                    if st.button(f"Give Access to {data['name']}", key=f"app_{email}"):
+                    if st.button(f"Approve Account", key=f"app_{email}"):
                         st.session_state.users_db[email]["status"] = "Approved"
-                        st.success(f"Access granted to {data['name']}!")
+                        st.success("Approved!")
                         time.sleep(0.5)
                         st.rerun()
                 else:
-                    if st.button(f"Revoke Access / Block", key=f"rev_{email}"):
+                    if st.button(f"Revoke Access / Block ID", key=f"rev_{email}"):
                         st.session_state.users_db[email]["status"] = "Pending"
-                        st.warning(f"Access revoked for {data['name']}!")
+                        st.warning("Blocked!")
                         time.sleep(0.5)
                         st.rerun()
             st.markdown("<div style='border-bottom: 1px solid #1f2633; margin: 10px 0;'></div>", unsafe_allow_html=True)
 
-    # ---- عام صارف پینل (سگنل بوٹ) ----
     else:
+        # بائنری سگنل بوٹ لاجک
         pair = st.selectbox("📊 SELECT ASSET / CURRENCY PAIR:", ["EURUSD", "GBPUSD", "USDJPY", "AUDUSD", "USDCAD", "BTCUSD", "ETHUSD"])
         timeframe_label = st.radio("⏱️ SELECT EXPIRY TIMEFRAME:", ["5 Seconds", "15 Seconds", "30 Seconds", "60 Seconds"], horizontal=True)
         
@@ -191,7 +173,7 @@ else:
                 time.sleep(1)
             countdown_placeholder.empty()
 
-            with st.spinner("Scanning Technical Indicators..."):
+            with st.spinner("Analyzing Market Flow..."):
                 analysis_success = False
                 summary = None
                 exchanges_to_try = ["FX", "FX_IDC", "OANDA", "BINANCE"] if "USD" in pair and pair not in ["BTCUSD", "ETHUSD"] else ["BINANCE"]
@@ -222,8 +204,8 @@ else:
                     
                     st.write("")
                     col1, col2, col3 = st.columns(3)
-                    col1.metric("Buy Indicators", buy_score)
+                    col1.metric("Buy", buy_score)
                     col2.metric("Neutral", neutral_score)
-                    col3.metric("Sell Indicators", sell_score)
+                    col3.metric("Sell", sell_score)
                 else:
                     st.error("Market data temporarily unavailable.")
