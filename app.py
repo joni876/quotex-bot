@@ -5,24 +5,23 @@ from tradingview_ta import TA_Handler, Interval
 # موبائل اور ویب پیج کی سیٹنگز
 st.set_page_config(page_title="Quotex VIP Signals", page_icon="📈", layout="centered")
 
-# بالکل نئی اسٹریم لٹ کلاسز کو بلاک کرنے کا نیا کوڈ (اس سے پٹی لازمی غائب ہوگی)
+# نیچے والی پٹی (Built with Streamlit) اور فل اسکرین کو ہر حال میں غائب کرنے کا کوڈ
 st.markdown("""
     <style>
-    /* مینو، ہیڈر اور پرانے فوٹر کو ہٹانے کے لیے */
     #MainMenu {visibility: hidden; display: none;}
     footer {visibility: hidden; display: none !important;}
     header {visibility: hidden; display: none;}
     
-    /* نئی اسٹریملٹ اپڈیٹ کی نیچے والی سفید پٹی (Viewer Badge) کو غائب کرنے کے لیے */
+    /* نئی اسٹریملٹ اپڈیٹ کی نیچے والی سفید پٹی کو بلاک کرنا */
     [data-testid="stStatusWidget"] {visibility: hidden; display: none !important;}
     .stAppDeployDropdown {display: none !important;}
     div[class*="viewerBadge"] {display: none !important;}
     div[class*="styles_viewerBadge"] {display: none !important;}
     
-    /* فل اسکرین بٹن کو غائب کرنے کے لیے */
+    /* فل اسکرین بٹن کو غائب کرنا */
     button[title="View fullscreen"] {visibility: hidden; display: none !important;}
     
-    /* مین بیک گراؤنڈ کلر */
+    /* مین ڈارک بیک گراؤنڈ */
     .stApp {
         background-color: #0b0e14;
         color: #ffffff;
@@ -36,7 +35,7 @@ st.markdown("""
         border-radius: 8px !important;
     }
     
-    /* ٹیکسٹ کلر */
+    /* ریڈیو بٹن ٹیکسٹ */
     div[data-testid="stMarkdownContainer"] p {
         color: #e0e3eb !important;
     }
@@ -65,7 +64,7 @@ st.markdown("<h1 style='text-align: center; color: #00e676; font-family: sans-se
 st.markdown("<p style='text-align: center; color: #707a8a; font-family: sans-serif; font-size: 14px;'>AI-Powered Real-Time Market Analysis Dashboard</p>", unsafe_allow_html=True)
 st.markdown("<div style='border-bottom: 2px solid #1f2633; margin-bottom: 25px;'></div>", unsafe_allow_html=True)
 
-# 1. کرنسی پیئر کا انتخاب
+# 1. کرنシー پیئر کا انتخاب
 pair = st.selectbox(
     "📊 SELECT ASSET / CURRENCY PAIR:",
     ["EURUSD", "GBPUSD", "USDJPY", "AUDUSD", "USDCAD", "BTCUSD", "ETHUSD"]
@@ -83,7 +82,7 @@ timeframe_label = st.radio(
 st.write("")
 st.write("")
 
-# 3. سگنل بٹن
+# 3. سگنل بٹن اور لاجک
 if st.button("🚀 GENERATE INSTANT SIGNAL", use_container_width=True):
     countdown_placeholder = st.empty()
     for seconds_left in range(3, 0, -1):
@@ -145,4 +144,8 @@ if st.button("🚀 GENERATE INSTANT SIGNAL", use_container_width=True):
             st.write("")
             col1, col2, col3 = st.columns(3)
             col1.metric("Buy Indicators", buy_score)
-            col2.metric("Neutral", neutral_score
+            col2.metric("Neutral", neutral_score)
+            col3.metric("Sell Indicators", sell_score)
+            
+        except Exception as e:
+            st.error(f"Error connecting to server. Please try again.")
