@@ -2,24 +2,29 @@ import streamlit as st
 import time
 from tradingview_ta import TA_Handler, Interval
 
-# موبائل اور ویب پیج کی سیٹنگز
+# मोबाइल और वेब पेज की सेटिंग्स
 st.set_page_config(page_title="Quotex VIP Signals", page_icon="📈", layout="centered")
 
-# کسٹم پرو ٹریڈنگ ڈارک تھیم (CSS)
-professional_dark_theme = """
+# मजबूत CSS इंजेक्शन: नीचे की सफेद पट्टी (Footer) और फुलस्क्रीन बटन को हर हाल में छिपाने के लिए
+hide_elements_css = """
             <style>
-            #MainMenu {visibility: hidden;}
-            footer {visibility: hidden;}
-            header {visibility: hidden;}
-            button[title="View fullscreen"] {visibility: hidden;}
+            #MainMenu {visibility: hidden; display: none;}
+            footer {visibility: hidden; display: none !important;}
+            header {visibility: hidden; display: none;}
+            .stActionButton {visibility: hidden; display: none;}
             
-            /* پورا بیک گراؤنڈ بلیک/ڈارک کرنا */
+            /* फुलस्क्रीन बटन और नीचे की सभी एक्स्ट्रा पट्टियों को ब्लॉक करना */
+            button[title="View fullscreen"] {visibility: hidden; display: none !important;}
+            .viewerBadge_container__1QSob {display: none !important;}
+            .viewerBadge_link__1S1Z3 {display: none !important;}
+            
+            /* मुख्य बैकग्राउंड को डार्क सेट करना */
             .stApp {
                 background-color: #0b0e14;
                 color: #ffffff;
             }
             
-            /* ڈراپ ڈاؤن اور ان پٹ بکس کا ڈیزائن */
+            /* इनपुट बॉक्स स्टाइलिंग */
             div[data-baseweb="select"] > div {
                 background-color: #151a24 !important;
                 color: white !important;
@@ -27,12 +32,12 @@ professional_dark_theme = """
                 border-radius: 8px !important;
             }
             
-            /* ریڈیو بٹنز (Timeframe) کا ڈیزائن */
+            /* टेक्स्ट कलर सेटिंग्स */
             div[data-testid="stMarkdownContainer"] p {
                 color: #e0e3eb !important;
             }
             
-            /* جنریٹ سگنل بٹن کو کوٹیکس جیسا گرین بنانا */
+            /* बटन को प्रोफेशनल ग्रीन लुक देना */
             div.stButton > button {
                 background-color: #00b050 !important;
                 color: white !important;
@@ -50,14 +55,14 @@ professional_dark_theme = """
             }
             </style>
             """
-st.markdown(professional_dark_theme, unsafe_allow_html=True)
+st.markdown(hide_elements_css, unsafe_allow_html=True)
 
-# خوبصورت ہیڈنگ (Quotex VIP اسٹائل)
+# हेडिंग सेक्शन
 st.markdown("<h1 style='text-align: center; color: #00e676; font-family: sans-serif; margin-bottom: 0;'>📈 QUOTEX VIP SIGNALS</h1>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center; color: #707a8a; font-family: sans-serif; font-size: 14px;'>AI-Powered Real-Time Market Analysis Dashboard</p>", unsafe_allow_html=True)
 st.markdown("<div style='border-bottom: 2px solid #1f2633; margin-bottom: 25px;'></div>", unsafe_allow_html=True)
 
-# 1. کرنسی پیئر کا انتخاب
+# 1. एसेट/करेंसी पेयर का चुनाव
 pair = st.selectbox(
     "📊 SELECT ASSET / CURRENCY PAIR:",
     ["EURUSD", "GBPUSD", "USDJPY", "AUDUSD", "USDCAD", "BTCUSD", "ETHUSD"]
@@ -65,7 +70,7 @@ pair = st.selectbox(
 
 st.write("")
 
-# 2. ٹائم فریم کا انتخاب
+# 2. टाइमफ्रेम का चुनाव
 timeframe_label = st.radio(
     "⏱️ SELECT EXPIRY TIMEFRAME:",
     ["5 Seconds", "15 Seconds", "30 Seconds", "60 Seconds"],
@@ -75,9 +80,9 @@ timeframe_label = st.radio(
 st.write("")
 st.write("")
 
-# 3. سگنل جنریٹ کرنے کا بٹن
+# 3. सिग्नल बटन और लॉजिक
 if st.button("🚀 GENERATE INSTANT SIGNAL", use_container_width=True):
-    # ٹریڈ کے لیے ریڈی ہونے کا ٹائمر (3 سیکنڈ کاؤنٹ ڈاؤن)
+    # 3 सेकंड का टाइमर
     countdown_placeholder = st.empty()
     for seconds_left in range(3, 0, -1):
         countdown_placeholder.markdown(
@@ -92,7 +97,6 @@ if st.button("🚀 GENERATE INSTANT SIGNAL", use_container_width=True):
 
     with st.spinner("Scanning Technical Indicators..."):
         try:
-            # TradingView سے لائیو ڈیٹا فیچ کرنا
             handler = TA_Handler(
                 symbol=pair,
                 screener="forex" if "USD" in pair and pair != "BTCUSD" and pair != "ETHUSD" else "crypto",
@@ -110,7 +114,6 @@ if st.button("🚀 GENERATE INSTANT SIGNAL", use_container_width=True):
             st.markdown("<div style='border-bottom: 1px solid #1f2633; margin: 25px 0;'></div>", unsafe_allow_html=True)
             st.subheader("🎯 LIVE SIGNAL RESULT:")
             
-            # سگنل دکھانے کا طریقہ کار
             if buy_score > sell_score and buy_score >= 10:
                 st.markdown(
                     f"<div style='background-color:#052e16; padding:25px; border-radius:10px; border:2px solid #00e676; text-align:center; box-shadow: 0px 0px 20px rgba(0,230,118,0.2);'>"
@@ -136,7 +139,6 @@ if st.button("🚀 GENERATE INSTANT SIGNAL", use_container_width=True):
                     unsafe_allow_html=True
                 )
                 
-            # تکنیکی میٹرکس
             st.write("")
             st.write("")
             col1, col2, col3 = st.columns(3)
