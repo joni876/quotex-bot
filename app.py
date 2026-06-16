@@ -5,9 +5,10 @@ from tradingview_ta import TA_Handler, Interval
 # پیج سیٹنگز
 st.set_page_config(page_title="VIP Trading Terminal", page_icon="📈", layout="centered")
 
-# کسٹم اسٹائلنگ اور پٹی غائب کرنے کا کوڈ
+# کسٹم اسٹائلنگ - الفاظ کو بالکل سفید اور صاف کرنے کا کوڈ
 st.markdown("""
     <style>
+    /* بلاگر اور اسٹریم لٹ کے مینو غائب کرنے کے لیے */
     #MainMenu {visibility: hidden; display: none;}
     footer {visibility: hidden; display: none !important;}
     header {visibility: hidden; display: none;}
@@ -16,9 +17,42 @@ st.markdown("""
     div[class*="viewerBadge"] {display: none !important;}
     button[title="View fullscreen"] {visibility: hidden; display: none !important;}
     
+    /* بیک گراؤنڈ سیٹنگز */
     .stApp { background-color: #0b0e14; color: #ffffff; }
-    div[data-baseweb="select"] > div { background-color: #151a24 !important; color: white !important; border: 1px solid #2a3447 !important; border-radius: 8px !important; }
-    div.stButton > button { background-color: #00b050 !important; color: white !important; font-weight: bold; border-radius: 8px !important; width: 100%; }
+    
+    /* ان پٹ فیلڈز کے لیبل (Labels) کو بالکل سفید اور موٹا (Bold) کرنے کا کوڈ */
+    div[data-testid="stWidgetLabel"] p {
+        color: #ffffff !important;
+        font-size: 16px !important;
+        font-weight: 600 !important;
+        text-shadow: 0px 0px 5px rgba(255,255,255,0.2) !important;
+    }
+    
+    /* ان پٹ بکس کے اندرونی ٹیکسٹ کو صاف کرنے کے لیے */
+    input {
+        color: #ffffff !important;
+        background-color: #151a24 !important;
+    }
+    
+    /* ڈراپ ڈاؤن (Selectbox) اور دیگر فیلڈز کی اسٹائلنگ */
+    div[data-baseweb="select"] > div { 
+        background-color: #151a24 !important; 
+        color: white !important; 
+        border: 1px solid #2a3447 !important; 
+        border-radius: 8px !important; 
+    }
+    
+    /* بٹن کو خوبصورت اور چمکدار بنانے کے لیے */
+    div.stButton > button { 
+        background-color: #00b050 !important; 
+        color: white !important; 
+        font-weight: bold; 
+        font-size: 16px !important;
+        border-radius: 8px !important; 
+        width: 100%; 
+        border: none !important;
+        box-shadow: 0px 4px 15px rgba(0, 176, 80, 0.4) !important;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -37,7 +71,7 @@ if "logged_in_user" not in st.session_state:
 countries_list = ["Pakistan", "India", "Bangladesh", "UAE", "Saudi Arabia", "USA", "UK", "Others"]
 
 st.markdown("<h1 style='text-align: center; color: #00e676;'>📈 VIP SIGNAL CONTROLLER</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; color: #707a8a; font-size: 13px;'>Secure Financial Analysis Interface</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #a3b1cc; font-size: 14px;'>Secure Financial Analysis Interface</p>", unsafe_allow_html=True)
 st.markdown("<div style='border-bottom: 2px solid #1f2633; margin-bottom: 25px;'></div>", unsafe_allow_html=True)
 
 # لاگ ان اور رجسٹریشن سسٹم
@@ -45,7 +79,7 @@ if st.session_state.logged_in_user is None:
     tab1, tab2, tab3 = st.tabs(["🔐 MEMBER ACCESS", "📝 REQUEST ACCESS", "🔑 RECOVERY"])
     
     with tab1:
-        st.write("Enter your registered credentials:")
+        st.markdown("<h4 style='color:#00e676;'>Enter your registered credentials:</h4>", unsafe_allow_html=True)
         login_email = st.text_input("User ID (Email):", key="l_email").strip().lower()
         login_pass = st.text_input("Access Key (Password):", type="password", key="l_pass")
         
@@ -112,11 +146,12 @@ else:
     col_user, col_out = st.columns([4, 1])
     col_user.markdown(f"👤 **Active Session:** {user_info['name']} ({user_info['country']})")
     if col_out.button("DISCONNECT", key="logout_btn"):
-        logout()
+        st.session_state.logged_in_user = None
+        st.rerun()
         
     st.write("---")
     
-    with st.expander("🔄 MODIFY ACCESS KEY (پاسورڈ تبدیل کریں)"):
+    with st.expander("🔄 MODIFY ACCESS KEY"):
         old_p = st.text_input("Old Password:", type="password", key="old_p")
         new_p = st.text_input("New Password:", type="password", key="new_p")
         confirm_p = st.text_input("Confirm Password:", type="password", key="confirm_p")
@@ -176,11 +211,17 @@ else:
             with st.spinner("Analyzing Market Flow..."):
                 analysis_success = False
                 summary = None
-                exchanges_to_try = ["FX", "FX_IDC", "OANDA", "BINANCE"] if "USD" in pair and pair not in ["BTCUSD", "ETHUSD"] else ["BINANCE"]
+                
+                exchanges_to_try = ["FX_IDC", "OANDA", "FOREXCOM", "SAXO"] if "USD" in pair and pair not in ["BTCUSD", "ETHUSD"] else ["BINANCE"]
                 
                 for ex in exchanges_to_try:
                     try:
-                        handler = TA_Handler(symbol=pair, screener="crypto" if pair in ["BTCUSD", "ETHUSD"] else "forex", exchange=ex, interval=Interval.INTERVAL_1_MINUTE)
+                        handler = TA_Handler(
+                            symbol=pair,
+                            screener="crypto" if pair in ["BTCUSD", "ETHUSD"] else "forex",
+                            exchange=ex,
+                            interval=Interval.INTERVAL_1_MINUTE
+                        )
                         analysis = handler.get_analysis()
                         summary = analysis.summary
                         if summary and (summary['BUY'] > 0 or summary['SELL'] > 0):
@@ -204,8 +245,8 @@ else:
                     
                     st.write("")
                     col1, col2, col3 = st.columns(3)
-                    col1.metric("Buy", buy_score)
+                    col1.metric("Buy Indicators", buy_score)
                     col2.metric("Neutral", neutral_score)
-                    col3.metric("Sell", sell_score)
+                    col3.metric("Sell Indicators", sell_score)
                 else:
-                    st.error("Market data temporarily unavailable.")
+                    st.error("Market data server timed out. Please click generate again.")
