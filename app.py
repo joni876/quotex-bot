@@ -1,14 +1,45 @@
 import streamlit as st
 import time
+import json
+import os
 from tradingview_ta import TA_Handler, Interval
 
 # پیج سیٹنگز
 st.set_page_config(page_title="VIP Trading Terminal", page_icon="📈", layout="centered")
 
-# کسٹم اسٹائلنگ - الفاظ کو بالکل سفید اور صاف کرنے کا کوڈ
+# مستقل فائل کا نام جہاں صارفین کا ڈیٹا سیو رہے گا
+DB_FILE = "users_db.json"
+
+# ڈیٹا بیس کو فائل سے لوڈ کرنے اور سیو کرنے کے فنکشنز
+def load_db():
+    if os.path.exists(DB_FILE):
+        try:
+            with open(DB_FILE, "r") as f:
+                return json.load(f)
+        except:
+            pass
+    # ڈیفالٹ ایڈمن اکاؤنٹ
+    return {
+        "admin@bot.com": {
+            "name": "Admin", "phone": "0000", "country": "Pakistan", "address": "Server", 
+            "password": "admin786", "status": "Approved", "role": "admin"
+        }
+    }
+
+def save_db(db_data):
+    with open(DB_FILE, "w") as f:
+        json.dump(db_data, f, indent=4)
+
+# سیشن اسٹیٹ میں ڈیٹا لوڈ کرنا
+if "users_db" not in st.session_state:
+    st.session_state.users_db = load_db()
+
+if "logged_in_user" not in st.session_state:
+    st.session_state.logged_in_user = None
+
+# کسٹم اسٹائلنگ - پٹی غائب کرنے اور چمکدار سفید ٹیکسٹ کے لیے
 st.markdown("""
     <style>
-    /* بلاگر اور اسٹریم لٹ کے مینو غائب کرنے کے لیے */
     #MainMenu {visibility: hidden; display: none;}
     footer {visibility: hidden; display: none !important;}
     header {visibility: hidden; display: none;}
@@ -17,56 +48,25 @@ st.markdown("""
     div[class*="viewerBadge"] {display: none !important;}
     button[title="View fullscreen"] {visibility: hidden; display: none !important;}
     
-    /* بیک گراؤنڈ سیٹنگز */
     .stApp { background-color: #0b0e14; color: #ffffff; }
     
-    /* ان پٹ فیلڈز کے لیبل (Labels) کو بالکل سفید اور موٹا (Bold) کرنے کا کوڈ */
+    /* لیبلز کو بالکل سفید اور واضح کرنے کے لیے */
     div[data-testid="stWidgetLabel"] p {
         color: #ffffff !important;
         font-size: 16px !important;
         font-weight: 600 !important;
-        text-shadow: 0px 0px 5px rgba(255,255,255,0.2) !important;
     }
     
-    /* ان پٹ بکس کے اندرونی ٹیکسٹ کو صاف کرنے کے لیے */
-    input {
-        color: #ffffff !important;
-        background-color: #151a24 !important;
-    }
+    input { color: #ffffff !important; background-color: #151a24 !important; }
+    div[data-baseweb="select"] > div { background-color: #151a24 !important; color: white !important; border: 1px solid #2a3447 !important; border-radius: 8px !important; }
     
-    /* ڈراپ ڈاؤن (Selectbox) اور دیگر فیلڈز کی اسٹائلنگ */
-    div[data-baseweb="select"] > div { 
-        background-color: #151a24 !important; 
-        color: white !important; 
-        border: 1px solid #2a3447 !important; 
-        border-radius: 8px !important; 
-    }
-    
-    /* بٹن کو خوبصورت اور چمکدار بنانے کے لیے */
     div.stButton > button { 
-        background-color: #00b050 !important; 
-        color: white !important; 
-        font-weight: bold; 
-        font-size: 16px !important;
-        border-radius: 8px !important; 
-        width: 100%; 
-        border: none !important;
+        background-color: #00b050 !important; color: white !important; font-weight: bold; font-size: 16px !important;
+        border-radius: 8px !important; width: 100%; border: none !important;
         box-shadow: 0px 4px 15px rgba(0, 176, 80, 0.4) !important;
     }
     </style>
 """, unsafe_allow_html=True)
-
-# ڈیٹا بیس اسٹوریج
-if "users_db" not in st.session_state:
-    st.session_state.users_db = {
-        "admin@bot.com": {
-            "name": "Admin", "phone": "0000", "country": "Pakistan", "address": "Server", 
-            "password": "admin786", "status": "Approved", "role": "admin"
-        }
-    }
-
-if "logged_in_user" not in st.session_state:
-    st.session_state.logged_in_user = None
 
 countries_list = ["Pakistan", "India", "Bangladesh", "UAE", "Saudi Arabia", "USA", "UK", "Others"]
 
@@ -84,6 +84,9 @@ if st.session_state.logged_in_user is None:
         login_pass = st.text_input("Access Key (Password):", type="password", key="l_pass")
         
         if st.button("VERIFY & ENTER", key="btn_login"):
+            # فائل سے تازہ ترین ڈیٹا لوڈ کریں
+            st.session_state.users_db = load_db()
+            
             if login_email in st.session_state.users_db:
                 user_data = st.session_state.users_db[login_email]
                 if user_data["password"] == login_pass:
@@ -110,6 +113,8 @@ if st.session_state.logged_in_user is None:
         reg_repass = st.text_input("Retype Password:", type="password")
         
         if st.button("SUBMIT APPLICATION", key="btn_reg"):
+            st.session_state.users_db = load_db()
+            
             if not (reg_name and reg_phone and reg_email and reg_address and reg_pass and reg_repass):
                 st.error("⚠️ All fields are mandatory!")
             elif reg_pass != reg_repass:
@@ -117,10 +122,12 @@ if st.session_state.logged_in_user is None:
             elif reg_email in st.session_state.users_db:
                 st.error("❌ This ID is already in use.")
             else:
+                # نئے صارف کو شامل کریں اور فائل میں محفوظ کریں
                 st.session_state.users_db[reg_email] = {
                     "name": reg_name, "phone": reg_phone, "country": reg_country,
                     "address": reg_address, "password": reg_pass, "status": "Pending", "role": "user"
                 }
+                save_db(st.session_state.users_db)
                 st.success("✅ Application submitted! Please ask Admin to approve your ID.")
 
     with tab3:
@@ -130,6 +137,7 @@ if st.session_state.logged_in_user is None:
         f_phone = st.text_input("Mobile Number:", key="f_phone")
         
         if st.button("RETRIEVE ACCESS KEY", key="btn_forgot"):
+            st.session_state.users_db = load_db()
             if f_email in st.session_state.users_db:
                 u_data = st.session_state.users_db[f_email]
                 if u_data["name"].lower() == f_name.lower() and u_data["phone"] == f_phone:
@@ -157,6 +165,7 @@ else:
         confirm_p = st.text_input("Confirm Password:", type="password", key="confirm_p")
         
         if st.button("SAVE CHANGES"):
+            st.session_state.users_db = load_db()
             if old_p != user_info["password"]:
                 st.error("❌ Incorrect old password.")
             elif new_p != confirm_p:
@@ -165,6 +174,7 @@ else:
                 st.error("⚠️ Must be at least 4 characters.")
             else:
                 st.session_state.users_db[current_email]["password"] = new_p
+                save_db(st.session_state.users_db)
                 st.success("✅ Password updated successfully!")
                 time.sleep(1)
                 st.rerun()
@@ -173,6 +183,7 @@ else:
 
     if user_info["role"] == "admin":
         st.subheader("👑 TERMINAL CONTROLLER PANEL")
+        st.session_state.users_db = load_db()
         
         for email, data in list(st.session_state.users_db.items()):
             if data["role"] == "admin":
@@ -185,12 +196,14 @@ else:
                 if data["status"] == "Pending":
                     if st.button(f"Approve Account", key=f"app_{email}"):
                         st.session_state.users_db[email]["status"] = "Approved"
+                        save_db(st.session_state.users_db)
                         st.success("Approved!")
                         time.sleep(0.5)
                         st.rerun()
                 else:
                     if st.button(f"Revoke Access / Block ID", key=f"rev_{email}"):
                         st.session_state.users_db[email]["status"] = "Pending"
+                        save_db(st.session_state.users_db)
                         st.warning("Blocked!")
                         time.sleep(0.5)
                         st.rerun()
