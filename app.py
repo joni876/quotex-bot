@@ -1,4 +1,5 @@
 import streamlit as st
+import time
 from tradingview_ta import TA_Handler, Interval
 
 # موبائل اور ویب پیج کی سیٹنگز
@@ -26,6 +27,19 @@ st.write("")
 
 # 3. سگنل جنریٹ کرنے کا بٹن
 if st.button("🚀 GENERATE SIGNAL", use_container_width=True):
+    # ٹریڈ کے لیے ریڈی ہونے کا ٹائمر (3 سیکنڈ کاؤنٹ ڈاؤن)
+    countdown_placeholder = st.empty()
+    for seconds_left in range(3, 0, -1):
+        countdown_placeholder.markdown(
+            f"<div style='text-align:center; padding:10px; background-color:#111; border-radius:5px;'>"
+            f"<h3 style='color:#ffea00; margin:0;'>⏳ Get Ready! Opening Trade in {seconds_left}s...</h3>"
+            f"</div>", 
+            unsafe_allow_html=True
+        )
+        time.sleep(1)
+    
+    countdown_placeholder.empty() # ٹائمر ختم ہونے پر اسے صاف کریں
+
     with st.spinner("Analyzing market indicators..."):
         try:
             # TradingView سے لائیو ڈیٹا فیچ کرنا
