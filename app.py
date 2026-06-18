@@ -33,15 +33,64 @@ if "users_db" not in st.session_state:
 if "logged_in_user" not in st.session_state:
     st.session_state.logged_in_user = None
 
-# कस्टम डार्क थीम स्टाइलिंग
+# 🌟 सुपर हाई-कॉन्ट्रास्ट ब्राइट CSS (टेक्स्ट का धुंधलापन खत्म करने के लिए)
 st.markdown("""
     <style>
     #MainMenu {visibility: hidden; display: none;}
     footer {visibility: hidden; display: none !important;}
     header {visibility: hidden; display: none;}
-    .stApp { background-color: #0b0e14; color: #ffffff; }
-    div[data-testid="stWidgetLabel"] p { color: #ffffff !important; font-size: 16px !important; font-weight: 600 !important; }
-    div.stButton > button { background-color: #00b050 !important; color: white !important; font-weight: bold; font-size: 16px !important; border-radius: 8px !important; width: 100%; border: none !important; box-shadow: 0px 4px 15px rgba(0, 176, 80, 0.4) !important;}
+    
+    /* बैकग्राउंड डार्क और सारा बेसिक टेक्स्ट चमकीला सफेद */
+    .stApp { background-color: #0b0e14; color: #ffffff !important; }
+    
+    /* सभी इनपुट लेबल्स, पैराग्राफ और स्पैन को एकदम साफ सफेद करना */
+    label, p, span, .stMarkdown p {
+        color: #ffffff !important;
+        font-weight: 600 !important;
+        opacity: 1 !important;
+    }
+    
+    /* इनपुट फील्ड के ऊपर लिखे नामों (Labels) को बड़ा और चमकदार बनाना */
+    div[data-testid="stWidgetLabel"] p {
+        color: #ffffff !important;
+        font-size: 16px !important;
+        font-weight: 700 !important;
+    }
+    
+    /* रेडियो बटन्स (Timeframe) के टेक्स्ट को चमकाना */
+    div[data-testid="stRadio"] label p {
+        color: #ffffff !important;
+        font-size: 15px !important;
+    }
+    
+    /* टैब्स (LOGIN / REGISTER) के धुंधले टेक्स्ट को ठीक करना */
+    button[data-baseweb="tab"] div p {
+        color: #ffffff !important;
+        font-size: 16px !important;
+        font-weight: bold !important;
+    }
+    
+    /* नीचे रिजल्ट वाले Metrics (Buy/Sell Indicators) के लेबल्स को चमकाना */
+    div[data-testid="stMetricLabel"] div {
+        color: #ffffff !important;
+        font-size: 15px !important;
+        font-weight: bold !important;
+    }
+    div[data-testid="stMetricValue"] div {
+        color: #00e676 !important; /* नंबर्स को ग्रीन करना */
+        font-weight: 800 !important;
+    }
+    
+    /* इनपुट बॉक्स के अंदर का टेक्स्ट */
+    input { color: #ffffff !important; background-color: #151a24 !important; }
+    div[data-baseweb="select"] > div { background-color: #151a24 !important; color: white !important; border: 1px solid #2a3447 !important; }
+    
+    /* बटन स्टाइल */
+    div.stButton > button { 
+        background-color: #00b050 !important; color: white !important; font-weight: bold; font-size: 16px !important;
+        border-radius: 8px !important; width: 100%; border: none !important;
+        box-shadow: 0px 4px 15px rgba(0, 176, 80, 0.4) !important;
+    }
     .price-box { background-color: #151a24; padding: 15px; border-radius: 8px; border-left: 4px solid #00e676; margin-bottom: 20px; text-align: center; }
     </style>
 """, unsafe_allow_html=True)
@@ -102,11 +151,9 @@ else:
                 save_db(st.session_state.users_db)
                 st.rerun()
     else:
-        # यूजर के लिए सिग्नल पैनल
         pair = st.selectbox("📊 SELECT ASSET / CURRENCY PAIR:", ["EURUSD", "GBPUSD", "USDJPY", "AUDUSD", "USDCAD", "BTCUSD", "ETHUSD"])
         timeframe = st.radio("⏱️ SELECT EXPIRY TIMEFRAME:", ["5 Seconds", "15 Seconds", "30 Seconds", "60 Seconds"], horizontal=True)
         
-        # लाइव रेट फ़ेच करने की लॉजिक
         screener_type = "crypto" if pair in ["BTCUSD", "ETHUSD"] else "forex"
         exchange_type = "BINANCE" if screener_type == "crypto" else "FX_IDC"
         
@@ -121,16 +168,14 @@ else:
             )
             analysis_p = handler_price.get_analysis()
             if analysis_p and analysis_p.indicators:
-                # क्लोजिंग प्राइस ही लाइव करंट रेट होता है
                 current_price = analysis_p.indicators.get("close", "N/A")
         except:
             current_price = "Market Live (Click Generate to refresh)"
 
-        # लाइव रेट को स्क्रीन पर सुंदर बॉक्स में दिखाना
         st.markdown(f"""
             <div class='price-box'>
-                <span style='color: #a3b1cc; font-size: 14px; font-weight: bold;'>CURRENT LIVE RATE FOR {pair}:</span><br>
-                <span style='color: #00e676; font-size: 26px; font-weight: 800;'>{current_price}</span>
+                <span style='color: #ffffff; font-size: 15px; font-weight: bold;'>CURRENT LIVE RATE FOR {pair}:</span><br>
+                <span style='color: #00e676; font-size: 28px; font-weight: 800;'>{current_price}</span>
             </div>
         """, unsafe_allow_html=True)
         
